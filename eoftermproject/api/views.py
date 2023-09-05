@@ -62,63 +62,48 @@ def get_efo_terms(request):
         return paginator.get_paginated_response(serializer.data)
     except EFOterm.DoesNotExist:
         return Response({"error": "No EFO terms"}, status=404)
-
-@api_view(['GET','PUT','DELETE'])
-def efo_term(request, efo_term_id):
-    if request.method=='GET':
-        try:
-            efo_term = EFOterm.objects.get(efo_term_id=efo_term_id)
-            # Check for a 'fields' query parameter and split it into a list.
-            fields = request.query_params.get('fields')
-            if fields:
-                fields = fields.split(',')
-            # Use the dynamic fields serializer and pass the 'fields' argument
-            serializer = DynamicFieldsEFOtermSerializer(efo_term, many=False, fields=fields)
-            return Response(serializer.data)
-        except EFOterm.DoesNotExist:
-            return Response({"error": f"No EFO term with this ID:{efo_term_id}"}, status=404)
-    if request.method=='PUT':
-        try:
-            # Retrieve the EFO term by its ID
-            efo_term = EFOterm.objects.get(efo_term_id=efo_term_id)
-            serializer = DynamicFieldsEFOtermSerializer(efo_term, many=False, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-        except EFOterm.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-    if request.method=='DELETE':
-        try:
-            # Retrieve the EFO term by its ID
-            efo_term = EFOterm.objects.get(efo_term_id=efo_term_id)
-            if efo_term:
-                efo_term.delete()
-                return Response({"message": f"EFOTerm {efo_term_id} deleted successfully"}, status=status.HTTP_200_OK)
-            else:
-                return Response(status=status.HTTP_404_NOT_FOUND)
-        except EFOterm.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
         
-@api_view(['GET','POST'])
-def handle_efo_term(request):
-    if request.method=='POST':
-        serializer=DynamicFieldsEFOtermSerializer(data=request.data)
+@api_view(['GET', 'POST', 'PUT', 'DELETE'])
+def handle_efo_term(request, efo_term_id=None):
+    # Create a new EFO term
+    if request.method == 'POST':
+        serializer = DynamicFieldsEFOtermSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    elif request.method == 'GET':
-        # Handling retrieval of an EFOterm
-        efo_term_id = request.GET.get('efo_term_id')  # Get the efo_term_id from the request body
-        if not efo_term_id:
-            return Response({"error": "efo_term_id is required in the request body."}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            efo_term = EFOterm.objects.get(efo_term_id=efo_term_id)
-            serializer = DynamicFieldsEFOtermSerializer(efo_term)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except EFOterm.DoesNotExist:
-            return Response({"error": "EFOterm not found."}, status=status.HTTP_404_NOT_FOUND)
+    
+    # If efo_term_id is not provided for GET, PUT, or DELETE, return an error
+    if not efo_term_id:
+        return Response({"error": "efo_term_id is required for this request method."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Try to fetch the EFO term with the given ID
+    try:
+        efo_term = EFOterm.objects.get(efo_term_id=efo_term_id)
+    except EFOterm.DoesNotExist:
+        return Response({"error": f"No EFO term with this ID: {efo_term_id}"}, status=status.HTTP_404_NOT_FOUND)
+
+    # Retrieve details of an EFO term
+    if request.method == 'GET':
+        # Check for a 'fields' query parameter and split it into a list.
+        fields = request.query_params.get('fields')
+        if fields:
+            fields = fields.split(',')
+        serializer = DynamicFieldsEFOtermSerializer(efo_term, fields=fields)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    # Update details of an EFO term
+    elif request.method == 'PUT':
+        serializer = DynamicFieldsEFOtermSerializer(efo_term, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Delete an EFO term
+    elif request.method == 'DELETE':
+        efo_term.delete()
+        return Response({"message": f"EFOTerm {efo_term_id} deleted successfully"}, status=status.HTTP_200_OK)
 
     
 @api_view(['GET'])

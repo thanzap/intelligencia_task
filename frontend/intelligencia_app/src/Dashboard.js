@@ -40,13 +40,10 @@ const Dashboard = () => {
   const termData = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/v1/efoterm/`,
+        `http://localhost:8000/api/v1/efoterm/${searchTerm.trim()}/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-          params: {
-            efo_term_id: searchTerm.trim(),
           },
         }
       );
