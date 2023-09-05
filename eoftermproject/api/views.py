@@ -7,6 +7,8 @@ from eoftermapp.models import EFOterm
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
 
 @api_view(['POST'])
 def signup(request):
@@ -46,6 +48,7 @@ def login(request):
             return Response({'error': 'Invalid credentials!'}, status=status.HTTP_400_BAD_REQUEST)
         
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_efo_terms(request):
     try:
         efo_term = EFOterm.objects.all()
@@ -64,6 +67,7 @@ def get_efo_terms(request):
         return Response({"error": "No EFO terms"}, status=404)
         
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
 def handle_efo_term(request, efo_term_id=None):
     # Create a new EFO term
     if request.method == 'POST':
@@ -107,6 +111,7 @@ def handle_efo_term(request, efo_term_id=None):
 
     
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_parents_of_term(request, efo_term_id):
     try:
         efo_term = EFOterm.objects.get(efo_term_id=efo_term_id)
@@ -125,6 +130,7 @@ def get_parents_of_term(request, efo_term_id):
         return Response({"error": "EFOterm not found"}, status=404)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_children_of_term(request, efo_term_id):
     try:
         efo_term = EFOterm.objects.get(efo_term_id=efo_term_id)
