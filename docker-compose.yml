@@ -1,0 +1,41 @@
+version: "3"
+
+services:
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
+  backend:
+    build:
+      context: ./eoftermproject
+      dockerfile: Dockerfile.backend
+    command: sh -c "sleep 10s; python3 manage.py runserver 0.0.0.0:8000"
+    env_file:
+      - ./.env
+    volumes:
+      - ./eoftermproject:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend/intelligencia_app
+      dockerfile: Dockerfile.frontend
+    command: sh -c "npm start"
+    volumes:
+      - ./frontend/intelligencia_app:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

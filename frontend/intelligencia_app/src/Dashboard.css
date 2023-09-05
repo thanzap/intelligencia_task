@@ -1,0 +1,75 @@
+.dashboard {
+  height: 200vh;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 25px 0;
+  font-size: 18px;
+  text-align: left;
+  overflow: scroll;
+}
+
+table th,
+table td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+}
+
+table thead {
+  background-color: #f2f2f2;
+}
+
+table tbody tr:hover {
+  background-color: #f5f5f5;
+}
+
+/* Zebra stripe effect */
+table tbody tr:nth-child(even) {
+  background-color: #f8f8f8;
+}
+
+.header img {
+  width: 25%;
+  padding: 2rem;
+}
+.logout {
+  width: 15%;
+  height: 5vh;
+  margin-left: 6.5rem;
+}
+
+.header h2 {
+  align-self: center;
+}
+.header form {
+  align-self: center;
+}
+.search {
+  align-self: center;
+  margin-left: 13rem;
+}
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.search_errors {
+  align-self: center;
+}
+
+.pagination {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 3rem;
+}
+
+.pagination button {
+  margin-right: 1rem;
+  height: 2.4rem;
+  width: 5rem;
+}
