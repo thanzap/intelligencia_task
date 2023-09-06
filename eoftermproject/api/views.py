@@ -12,6 +12,15 @@ from rest_framework.decorators import permission_classes
 
 @api_view(['POST'])
 def signup(request):
+    """
+    Handles user registration.
+    
+    Args:
+    - request (Request): Contains user registration data (username, password, email).
+    
+    Returns:
+    - Response object with success or error message.
+    """
     if request.method == 'POST':
         
         username = request.data.get('username')
@@ -33,6 +42,15 @@ def signup(request):
 
 @api_view(['POST'])
 def login(request):
+    """
+    Authenticates a user and provides JWT tokens upon successful authentication.
+    
+    Args:
+    - request (Request): Contains user login data (username, password).
+    
+    Returns:
+    - Response object with access and refresh tokens or error message.
+    """
     if request.method == 'POST':
         username = request.data.get('username')
         password = request.data.get('password')
@@ -50,6 +68,15 @@ def login(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_efo_terms(request):
+    """
+    Fetches all EFO terms with optional dynamic fields filtering.
+    
+    Args:
+    - request (Request): Optional query parameter 'fields' to select specific fields.
+    
+    Returns:
+    - Paginated response containing EFO terms or error message.
+    """
     try:
         efo_term = EFOterm.objects.all()
         # Check for a 'fields' query parameter and split it into a list.
@@ -69,6 +96,16 @@ def get_efo_terms(request):
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def handle_efo_term(request, efo_term_id=None):
+    """
+    Create, retrieve, update, or delete an EFO term based on the HTTP method.
+    
+    Args:
+    - request (Request): Contains data for creating/updating an EFO term.
+    - efo_term_id (str, optional): EFO term ID to retrieve, update, or delete.
+    
+    Returns:
+    - Response object with EFO term data, success or error message.
+    """
     # Create a new EFO term
     if request.method == 'POST':
         serializer = DynamicFieldsEFOtermSerializer(data=request.data)
@@ -113,38 +150,60 @@ def handle_efo_term(request, efo_term_id=None):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_parents_of_term(request, efo_term_id):
-    try:
-        efo_term = EFOterm.objects.get(efo_term_id=efo_term_id)
-        parent_relationships = efo_term.parent_relations.all()
-        parent_terms = [relation.parent for relation in parent_relationships]
-        
-        efo_serializer = DynamicFieldsEFOtermSerializer(efo_term)
-        parents_serializer = DynamicFieldsEFOtermSerializer(parent_terms, many=True)
-        
-        return Response({
-            'efo_term': efo_serializer.data,
-            'parents': parents_serializer.data
-        })
-        
-    except EFOterm.DoesNotExist:
-        return Response({"error": "EFOterm not found"}, status=404)
+    """
+    Fetches parent terms of a given EFO term.
+    
+    Args:
+    - request (Request): Not used directly but required by the decorator.
+    - efo_term_id (str): EFO term ID whose children are to be retrieved.
+    
+    Returns:
+    - Response object with the EFO term data and its parents or error message.
+    """
+    if request.method=='GET':
+        try:
+            efo_term = EFOterm.objects.get(efo_term_id=efo_term_id)
+            parent_relationships = efo_term.parent_relations.all()
+            parent_terms = [relation.parent for relation in parent_relationships]
+            
+            efo_serializer = DynamicFieldsEFOtermSerializer(efo_term)
+            parents_serializer = DynamicFieldsEFOtermSerializer(parent_terms, many=True)
+            
+            return Response({
+                'efo_term': efo_serializer.data,
+                'parents': parents_serializer.data
+            })
+            
+        except EFOterm.DoesNotExist:
+            return Response({"error": "EFOterm not found"}, status=404)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_children_of_term(request, efo_term_id):
-    try:
-        efo_term = EFOterm.objects.get(efo_term_id=efo_term_id)
-        child_relationships = efo_term.child_relations.all()
-        child_terms = [relation.term for relation in child_relationships]
-        
-        efo_serializer = DynamicFieldsEFOtermSerializer(efo_term)
-        children_serializer = DynamicFieldsEFOtermSerializer(child_terms, many=True)
-        
-        return Response({
-            'efo_term': efo_serializer.data,
-            'children': children_serializer.data
-        })
-        
-    except EFOterm.DoesNotExist:
-        return Response({"error": "EFOterm not found"}, status=404)
+    """
+    Fetches child terms of a given EFO term.
+    
+    Args:
+    - request (Request): Not used directly but required by the decorator.
+    - efo_term_id (str): EFO term ID whose children are to be retrieved.
+    
+    Returns:
+    - Response object with the EFO term data and its children or error message.
+    """
+    if request.method=='GET':
+        try:
+            efo_term = EFOterm.objects.get(efo_term_id=efo_term_id)
+            child_relationships = efo_term.child_relations.all()
+            child_terms = [relation.term for relation in child_relationships]
+            
+            efo_serializer = DynamicFieldsEFOtermSerializer(efo_term)
+            children_serializer = DynamicFieldsEFOtermSerializer(child_terms, many=True)
+            
+            return Response({
+                'efo_term': efo_serializer.data,
+                'children': children_serializer.data
+            })
+            
+        except EFOterm.DoesNotExist:
+            return Response({"error": "EFOterm not found"}, status=404)
 
